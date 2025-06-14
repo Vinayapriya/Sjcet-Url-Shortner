@@ -1,6 +1,10 @@
 import { Hono } from "hono";
-import { supabase } from "./supabaseClient";
+import { supabase } from "./supabaseClient.js";
 import bcrypt from "bcryptjs";
+
+function isSjcetEmail(email: string): boolean {
+  return typeof email === "string" && email.toLowerCase().endsWith("@sjcetpalai.ac.in");
+}
 
 const auth = new Hono();
 //auth.get("/signup", c => c.text("Signup route is working! (GET for test only)"));
@@ -10,6 +14,10 @@ auth.post("/signup", async (c) => {
   if (!name || !email || !password || !dept || !year || !phone || !role) {
     return c.json({ error: "Missing fields" }, 400);
   }
+
+  if (!isSjcetEmail(email)) {
+  return c.json({ error: "Signup allowed only with sjcetpalai.ac.in email" }, 400);
+}
 
   // Check if user exists
   const { data: existing } = await supabase
@@ -40,6 +48,10 @@ auth.post("/login", async (c) => {
   if (!email || !password) {
     return c.json({ error: "Missing email or password" }, 400);
   }
+
+  if (!isSjcetEmail(email)) {
+  return c.json({ error: "Login allowed only with sjcetpalai.ac.in email" }, 400);
+}
 
   const { data: user } = await supabase
     .from("users")
